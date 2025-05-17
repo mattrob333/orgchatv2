@@ -150,3 +150,33 @@ export const suggestion = pgTable(
 );
 
 export type Suggestion = InferSelectModel<typeof suggestion>;
+
+export const agent = pgTable('Agent', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  name: varchar('name', { length: 128 }).notNull(),
+  title: varchar('title', { length: 128 }).notNull(),
+  department: varchar('department', { length: 128 }),
+  userId: uuid('userId').references(() => user.id),
+  systemPrompt: text('systemPrompt'),
+  modelId: varchar('modelId', { length: 64 }).notNull(),
+  avatarUrl: varchar('avatarUrl', { length: 256 }),
+});
+
+export type Agent = InferSelectModel<typeof agent>;
+
+export const orgRelationship = pgTable(
+  'OrgRelationship',
+  {
+    parentId: uuid('parentId')
+      .notNull()
+      .references(() => agent.id, { onDelete: 'cascade' }),
+    childId: uuid('childId')
+      .notNull()
+      .references(() => agent.id, { onDelete: 'cascade' }),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.parentId, table.childId] }),
+  }),
+);
+
+export type OrgRelationship = InferSelectModel<typeof orgRelationship>;

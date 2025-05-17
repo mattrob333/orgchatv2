@@ -26,6 +26,10 @@ import {
   vote,
   type DBMessage,
   type Chat,
+  agent,
+  orgRelationship,
+  type Agent,
+  type OrgRelationship,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
@@ -467,6 +471,83 @@ export async function getMessageCountByUserId({
     console.error(
       'Failed to get message count by user id for the last 24 hours from database',
     );
+    throw error;
+  }
+}
+
+// Agent CRUD operations
+export async function createAgent(data: Omit<Agent, 'id'> & { id?: string }) {
+  try {
+    const id = data.id ?? generateUUID();
+    return await db.insert(agent).values({ ...data, id }).returning();
+  } catch (error) {
+    console.error('Failed to create agent in database');
+    throw error;
+  }
+}
+
+export async function getAgentById({ id }: { id: string }) {
+  try {
+    const [row] = await db.select().from(agent).where(eq(agent.id, id));
+    return row;
+  } catch (error) {
+    console.error('Failed to get agent by id from database');
+    throw error;
+  }
+}
+
+export async function getAgents({ limit = 50, offset = 0 } = {}) {
+  try {
+    return await db.select().from(agent).limit(limit).offset(offset);
+  } catch (error) {
+    console.error('Failed to get agents from database');
+    throw error;
+  }
+}
+
+export async function updateAgent({ id, ...values }: { id: string } & Partial<Omit<Agent, 'id'>>) {
+  try {
+    return await db.update(agent).set(values).where(eq(agent.id, id)).returning();
+  } catch (error) {
+    console.error('Failed to update agent in database');
+    throw error;
+  }
+}
+
+export async function deleteAgent({ id }: { id: string }) {
+  try {
+    return await db.delete(agent).where(eq(agent.id, id));
+  } catch (error) {
+    console.error('Failed to delete agent from database');
+    throw error;
+  }
+}
+
+export async function createOrgRelationship({ parentId, childId }: { parentId: string; childId: string }) {
+  try {
+    return await db.insert(orgRelationship).values({ parentId, childId });
+  } catch (error) {
+    console.error('Failed to create org relationship');
+    throw error;
+  }
+}
+
+export async function getOrgRelationships() {
+  try {
+    return await db.select().from(orgRelationship);
+  } catch (error) {
+    console.error('Failed to get org relationships');
+    throw error;
+  }
+}
+
+export async function deleteOrgRelationship({ parentId, childId }: { parentId: string; childId: string }) {
+  try {
+    return await db
+      .delete(orgRelationship)
+      .where(and(eq(orgRelationship.parentId, parentId), eq(orgRelationship.childId, childId)));
+  } catch (error) {
+    console.error('Failed to delete org relationship');
     throw error;
   }
 }
