@@ -7,7 +7,11 @@ import { DataStreamHandler } from '@/components/data-stream-handler';
 import { auth } from '../(auth)/auth';
 import { redirect } from 'next/navigation';
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams?: { agentId?: string };
+}) {
   const session = await auth();
 
   if (!session) {
@@ -15,6 +19,7 @@ export default async function Page() {
   }
 
   const id = generateUUID();
+  const agentId = searchParams?.agentId;
 
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get('chat-model');
@@ -25,6 +30,7 @@ export default async function Page() {
         <Chat
           key={id}
           id={id}
+          agentId={agentId}
           initialMessages={[]}
           selectedChatModel={DEFAULT_CHAT_MODEL}
           selectedVisibilityType="private"
@@ -41,6 +47,7 @@ export default async function Page() {
       <Chat
         key={id}
         id={id}
+        agentId={agentId}
         initialMessages={[]}
         selectedChatModel={modelIdFromCookie.value}
         selectedVisibilityType="private"
