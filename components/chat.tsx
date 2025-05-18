@@ -20,6 +20,7 @@ import { useSearchParams } from 'next/navigation';
 
 export function Chat({
   id,
+  agentId,
   initialMessages,
   selectedChatModel,
   selectedVisibilityType,
@@ -27,6 +28,7 @@ export function Chat({
   session,
 }: {
   id: string;
+  agentId?: string;
   initialMessages: Array<UIMessage>;
   selectedChatModel: string;
   selectedVisibilityType: VisibilityType;
@@ -53,6 +55,7 @@ export function Chat({
     generateId: generateUUID,
     experimental_prepareRequestBody: (body) => ({
       id,
+      agentId,
       message: body.messages.at(-1),
       selectedChatModel,
     }),
