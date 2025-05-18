@@ -25,6 +25,7 @@ export function Chat({
   selectedVisibilityType,
   isReadonly,
   session,
+  agentId,
 }: {
   id: string;
   initialMessages: Array<UIMessage>;
@@ -32,6 +33,7 @@ export function Chat({
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
   session: Session;
+  agentId?: string;
 }) {
   const { mutate } = useSWRConfig();
 
@@ -55,6 +57,7 @@ export function Chat({
       id,
       message: body.messages.at(-1),
       selectedChatModel,
+      agentId,
     }),
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));

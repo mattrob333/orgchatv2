@@ -7,7 +7,7 @@ import { DataStreamHandler } from '@/components/data-stream-handler';
 import { auth } from '../(auth)/auth';
 import { redirect } from 'next/navigation';
 
-export default async function Page() {
+export default async function Page({ searchParams }: { searchParams?: { agentId?: string } }) {
   const session = await auth();
 
   if (!session) {
@@ -15,6 +15,7 @@ export default async function Page() {
   }
 
   const id = generateUUID();
+  const agentId = searchParams?.agentId;
 
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get('chat-model');
@@ -30,6 +31,7 @@ export default async function Page() {
           selectedVisibilityType="private"
           isReadonly={false}
           session={session}
+          agentId={agentId}
         />
         <DataStreamHandler id={id} />
       </>
@@ -46,6 +48,7 @@ export default async function Page() {
         selectedVisibilityType="private"
         isReadonly={false}
         session={session}
+        agentId={agentId}
       />
       <DataStreamHandler id={id} />
     </>

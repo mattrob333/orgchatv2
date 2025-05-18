@@ -14,6 +14,7 @@ import {
   getMessagesByChatId,
   saveChat,
   saveMessages,
+  getAgentById,
 } from '@/lib/db/queries';
 import { generateUUID, getTrailingMessageId } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { id, message, selectedChatModel } = requestBody;
+    const { id, message, selectedChatModel, agentId } = requestBody;
 
     const session = await auth();
 
@@ -63,6 +64,8 @@ export async function POST(request: Request) {
         },
       );
     }
+
+    const agent = agentId ? await getAgentById({ id: agentId }) : null;
 
     const chat = await getChatById({ id });
 
@@ -95,6 +98,12 @@ export async function POST(request: Request) {
       country,
     };
 
+    const modelToUse = agent?.modelId ?? selectedChatModel;
+    const systemToUse = agent?.systemPrompt ?? systemPrompt({
+      selectedChatModel: modelToUse,
+      requestHints,
+    });
+
     await saveMessages({
       messages: [
         {
@@ -111,12 +120,12 @@ export async function POST(request: Request) {
     return createDataStreamResponse({
       execute: (dataStream) => {
         const result = streamText({
-          model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
+          model: myProvider.languageModel(modelToUse),
+          system: systemToUse,
           messages,
           maxSteps: 5,
           experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning'
+            modelToUse === 'chat-model-reasoning'
               ? []
               : [
                   'getWeather',
